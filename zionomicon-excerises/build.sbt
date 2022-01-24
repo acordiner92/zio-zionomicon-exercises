@@ -4,9 +4,10 @@ lazy val root = project
   .in(file("."))
   .settings(
     name := "zionomicon-excerises",
-    version := "0.1.0-SNAPSHOT",
-
+    version := "1.0.0",
     scalaVersion := scala3Version,
-
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+    libraryDependencies ++= Seq(
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "dev.zio" %% "zio" % "2.0.0-RC1"
+    )
   )
