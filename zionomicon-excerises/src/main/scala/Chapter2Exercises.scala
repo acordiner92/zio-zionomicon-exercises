@@ -105,3 +105,118 @@ object Cat extends ZIOApp {
       }
       .exitCode
 }
+
+// 11. Using ZIO.fail and ZIO.succeed, implement the following function,
+// which converts an Either into a ZIO effect:
+def eitherToZIO[E, A](either: Either[E, A]): ZIO[Any, E, A] =
+  either.fold(ZIO.fail, ZIO.succeed)
+
+// 12. Using ZIO.fail and ZIO.succeed, implement the following function,
+// which converts a List into a ZIO effect, by looking at the head element in
+// the list and ignoring the rest of the elements.
+
+def listToZIO[A](list: List[A]): ZIO[Any, None.type, A] =
+  val option = list.headOption
+  option match {
+    case Some(i) => ZIO.succeed(i)
+    case None    => ZIO.fail(None)
+  }
+
+// 13. Using ZIO.succeed, convert the following procedural function into a ZIO
+// function:
+def currentTime(): Long = java.lang.System.currentTimeMillis()
+
+lazy val currentTimeZIO: ZIO[Any, Nothing, Long] = ZIO.succeed(currentTime())
+
+// 14. Using ZIO.async, convert the following asynchronous, callback-based func-
+// tion into a ZIO function:
+def getCacheValue(
+    key: String,
+    onSuccess: String => Unit,
+    onFailure: Throwable => Unit
+): Unit =
+  ???
+
+def getCacheValueZio(key: String): ZIO[Any, Throwable, String] =
+  ZIO.async { callback =>
+    getCacheValue(
+      key,
+      value => callback(ZIO.succeed(value)),
+      error => callback(ZIO.fail(error))
+    )
+  }
+
+// 15. Using ZIO.async, convert the following asynchronous, callback-based func-
+// tion into a ZIO function:
+trait User
+def saveUserRecord(
+    user: User,
+    onSuccess: () => Unit,
+    onFailure: Throwable => Unit
+): Unit =
+  ???
+def saveUserRecordZio(user: User): ZIO[Any, Throwable, Unit] =
+  ZIO.async { callback =>
+    saveUserRecord(
+      user,
+      () => callback(ZIO.unit),
+      error => callback(ZIO.fail(error))
+    )
+  }
+
+// 16. Using ZIO.fromFuture, convert the following code to ZIO:
+import scala.concurrent.{ExecutionContext, Future}
+trait Query
+trait Result
+def doQuery(query: Query)(implicit ec: ExecutionContext): Future[Result] = ???
+
+def doQueryZio(query: Query): ZIO[Any, Throwable, Result] =
+  Task.fromFuture(doQuery(query))
+
+// 17. Using the Console, write a little program that asks the user what their
+// name is, and then prints it out to them with a greeting.
+import zio.{App => ZIOApp}
+object HelloHuman extends ZIOApp {
+  def run(args: List[String]) = {
+    for
+      _ <- Console.printLine("What is your name?")
+      name <- Console.readLine
+      _ <- Console.printLine(s"Welcome ${name}")
+    yield ()
+  }.exitCode
+}
+
+// 18. Using the Console and Random services in ZIO, write a little program that
+// asks the user to guess a randomly chosen number between 1 and 3, and
+// prints out if they were correct or not.
+import zio._
+object NumberGuessing extends ZIOApp {
+  def run(args: List[String]) = {
+    for
+      num <- Random.nextIntBetween(1, 3)
+      _ <- Console.printLine("Guess a number between 1 to 3")
+      guess <- Console.readLine
+      guessInt <- ZIO.attempt(guess.toInt)
+      _ <-
+        if (num == guessInt) then Console.printLine("You guess correct")
+        else Console.printLine("You guess wrong")
+    yield ()
+  }.provideLayer(Console.live ++ Random.live).exitCode
+}
+
+// 19. Using the Console service and recursion, write a function that will repeat-
+// edly read input from the console until the specified user-defined function
+// evaluates to true on the input.
+import java.io.IOException
+def readUntil(
+    acceptInput: String => Boolean
+): ZIO[Console, IOException, String] =
+  ???
+
+// 20. Using recursion, write a function that will continue evaluating the specified
+// effect, until the specified user-defined function evaluates to true on the
+// output of the effect.
+def doWhile[R, E, A](
+    body: ZIO[R, E, A]
+)(condition: A => Boolean): ZIO[R, E, A] =
+  ???
