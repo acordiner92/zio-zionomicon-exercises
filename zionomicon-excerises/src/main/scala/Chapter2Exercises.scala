@@ -211,7 +211,12 @@ import java.io.IOException
 def readUntil(
     acceptInput: String => Boolean
 ): ZIO[Console, IOException, String] =
-  ???
+  for {
+    input <- Console.readLine
+    value <-
+      if (!acceptInput(input)) then readUntil(acceptInput)
+      else ZIO.succeed(input)
+  } yield value
 
 // 20. Using recursion, write a function that will continue evaluating the specified
 // effect, until the specified user-defined function evaluates to true on the
@@ -219,4 +224,9 @@ def readUntil(
 def doWhile[R, E, A](
     body: ZIO[R, E, A]
 )(condition: A => Boolean): ZIO[R, E, A] =
-  ???
+  for
+    a <- body
+    value <-
+      if (!condition(a)) then doWhile(body)(condition)
+      else ZIO.succeed(a)
+  yield a
