@@ -50,7 +50,7 @@ def onAnyFailure[R, E, A](
     zio: ZIO[R, E, A],
     handler: ZIO[R, E, Any]
 ): ZIO[R, E, A] =
-  ???
+  handler.foldCauseZIO(x => zio, _ => zio)
 
 // 5. Using the ZIO#refineOrDie method, implement the ioException func-
 // tion, which refines the error channel to only include the IOException
